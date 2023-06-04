@@ -1,0 +1,159 @@
+#Options
+GenerateScanner = true
+GenerateParser = true
+Language = Java
+ScannerName = Lexico
+ParserName = Sintatico
+SemanticName = Semantico
+ScannerCaseSensitive = true
+ScannerTable = Compact
+Input = Stream
+Parser = LL
+#RegularDefinitions
+dig: [0-9]
+mai: [A-Z]
+min: [a-z]
+#Tokens
+identificador: ((({min}+ {mai}? {min}*)+ | {mai} | ({mai} {min}+)+ {mai}?)) {dig}? {dig}? 
+constante_int: [1-9] {dig}? {dig}? (\. {dig} {dig} {dig})* | 0
+constante_float: [1-9] {dig}? {dig}? (\. {dig} {dig} {dig})* , {dig}+ | 0 , {dig}+ 
+constante_binaria: 0 (b | B) (0 | 1)+ 
+constante_string: \" [^\"\n\\]* \"
+
+// palavras reservadas
+pr_check = identificador: "check"
+pr_and = identificador: "and"
+pr_else = identificador: "else"
+pr_end = identificador: "end"
+pr_false = identificador: "false"
+pr_not = identificador: "not"
+pr_or = identificador: "or"
+pr_read = identificador: "read"
+pr_true = identificador: "true"
+pr_write = identificador: "write"
+pr_writeln = identificador: "writeln"
+pr_if = identificador: "if"
+
+// símbolos especiais:
+","
+";"
+"="
+":"
+":" 
+"("
+")" 
+"=="
+"!="
+"<"
+"<="
+">"
+">="
+"+"
+"-"
+"*"
+"/"
+
+//caracteres de formatação
+:[\s\t\n]
+
+// comentários: reconhecer e ignorar
+
+// comentario linha:
+	:! # [^\n]*
+// comentario bloco:
+	:! \{\n[^\{\}]*\n\}
+
+ 
+#NonTerminals
+<lista_comandos>
+<lista_comandos1>
+<lista_expressao>
+<lista_expressao1>
+<comando>
+<lista_id>
+<lista_id1>
+<atribuicao>
+<atribuicao1>
+<entrada_dados>
+<saida_dados>
+<selecao>
+<selecao1>
+<repeticao>
+<repeticao1>
+<expressao>
+<expressao_>
+<elemento>
+<relacional>
+<relacional_>
+<operador_relacional>
+<aritmetica>
+<aritmetica_>
+<termo>
+<termo_>
+<fator>
+<programa>
+
+#Grammar
+<programa> ::= #15 <lista_comandos> #16;
+
+<atribuicao> ::= <lista_id> "=" <expressao> <atribuicao1>;
+
+<atribuicao1> ::= ":" pr_if <expressao> | î;
+
+
+<entrada_dados> ::= pr_read "(" <lista_id> ")";
+
+
+<saida_dados> ::= pr_write "(" <lista_expressao> ")" | pr_writeln "(" <lista_expressao> ")" #17 ;
+
+
+<lista_expressao> ::= <expressao> #14 <lista_expressao1>;
+
+<lista_expressao1> ::= ","<lista_expressao> | î;
+
+
+<selecao> ::= pr_if "(" <expressao> ")" <lista_comandos> <selecao1> pr_end;
+
+<selecao1> ::= pr_else <lista_comandos> | î;
+
+
+<repeticao> ::= pr_check "(" <expressao> ")" ":" pr_if <repeticao1> <lista_comandos> pr_end;
+
+<repeticao1> ::= pr_true | pr_false;
+
+
+<comando> ::= <atribuicao> | <entrada_dados> | <saida_dados> | <selecao> | <repeticao>;
+
+
+<lista_comandos> ::= <comando> ";" <lista_comandos1>;
+
+<lista_comandos1> ::= <lista_comandos> | î;
+
+
+<lista_id> ::= identificador <lista_id1>;
+
+<lista_id1> ::= ","<lista_id> | î;
+
+<expressao>			::= <elemento> <expressao_>  ;
+<expressao_>			::= î | pr_and <elemento> #18 <expressao_> | pr_or <elemento>#19 <expressao_> ;
+<elemento>			::= <relacional> | pr_true #11 | pr_false #12 | pr_not <elemento> #13;
+
+<relacional>			::= <aritmetica> <relacional_> ;
+<relacional_>			::= î | <operador_relacional> #9 <aritmetica> #10;
+<operador_relacional>	::= "==" | "!=" | "<" | "<=" | ">" | ">=" ;
+
+<aritmetica>			::= <termo> <aritmetica_>  ;
+<aritmetica_>			::= î | "+" <termo> #1 <aritmetica_> | "-" <termo> #2 <aritmetica_> ;
+
+<termo>			::= <fator> <termo_> ;
+<termo_>			::= î | "*" <fator> #3 <termo_> | "/" <fator> #4 <termo_> ;
+
+<fator>			::= identificador | 
+			    	    constante_int #5 | 
+		   	    	    constante_float #6 | 
+			    	    constante_binaria |
+			    	    constante_string #20| 
+		   	    	    "(" <expressao> ")" |
+	    	  	    	    "+" <fator> | 
+	    		    	    "-" <fator> #8 ;
+

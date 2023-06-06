@@ -68,7 +68,7 @@ public class Semantico implements Constants {
 			doAcaoSemantica18();
 			break;
 		case 19:
-			//doAcaoSemantica19();
+			doAcaoSemantica19();
 			break;
 		case 20:
 			doAcaoSemantica20(token);
@@ -127,13 +127,14 @@ public class Semantico implements Constants {
 
 	public void doAcaoSemantica5(Token token) {
 		pilhaTipos.push(tipoInt);
+		codigo.append("ldc.i8\t");
 		codigo.append(token.getLexeme()+"\n");
-		codigo.append("conv.r8\n");
+		codigo.append("conv.r8" + "\n");
 	}
 	
 	public void doAcaoSemantica6(Token token) {
 		pilhaTipos.push(tipoFloat);
-		codigo.append("ldc.r8" + token.getLexeme()+"\n");
+		codigo.append("ldc.r8\t" + token.getLexeme()+"\n");
 	}
 	
 	public void doAcaoSemantica8() {
@@ -158,7 +159,7 @@ public class Semantico implements Constants {
 			case ">":
 				codigo.append("cgt\n");
 				break;
-			case "=>":
+			case ">=":
 				codigo.append("clt\n");
 				codigo.append("ldc.i4.0\n");
 				codigo.append("ceq\n");
@@ -197,15 +198,16 @@ public class Semantico implements Constants {
 		String tipo = pilhaTipos.pop();
 		if (tipo.equals(tipoInt)) {
 			codigo.append("conv.i8\n");
-		} else {
-			codigo.append(("call void [mscorlib]System.Console::Write(" + tipo + ")\n"));
-		}
+		} 
+		
+		codigo.append(("call void [mscorlib]System.Console::Write(" + tipo + ")\n"));
+
 
 	}
 	
 	public void doAcaoSemantica15() {
 		codigo.append((".assembly extern mscorlib{} \n.assembly _codigo_objeto{} \n.module _codigo_objeto.exe  "
-			   +"\n.class public _UNICA{ \n.method static public void _principal(){ \n.entrypoint"));
+			   +"\n.class public _UNICA{ \n.method static public void _principal(){ \n.entrypoint\n"));
 	}
 	
 	public void doAcaoSemantica16() {
@@ -236,7 +238,7 @@ public class Semantico implements Constants {
 	
 	public void doAcaoSemantica20(Token token) {
 		pilhaTipos.push(tipoString);
-		codigo.append(token.getLexeme()+"\n");
+		codigo.append("ldstr\t" + token.getLexeme()+"\n");
 	}
 
 	public String getCodigo() {

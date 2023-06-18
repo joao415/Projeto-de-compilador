@@ -13,6 +13,10 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -23,7 +27,10 @@ import javax.swing.text.BadLocationException;
 
 import compilador.LexicalError;
 import compilador.Lexico;
-import compilador.Token;
+import compilador.SemanticError;
+import compilador.Semantico;
+import compilador.Sintatico;
+import compilador.SyntaticError;
 
 public class BarraFerramentas {
     JFileChooser fc;
@@ -80,6 +87,7 @@ public class BarraFerramentas {
                     writer.write(text);
                     textArea.setText("");
                     tf.setText(file.getParentFile().getName() + "\\" + file.getName());
+                    caminho = fileChooser.getSelectedFile().getAbsolutePath();
                     JOptionPane.showMessageDialog(null, "Arquivo salvo em " + filePath);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -90,6 +98,10 @@ public class BarraFerramentas {
             File file = new File(filePath);
             if (file.exists()) {
                 file.delete();
+                
+               String caminhoIl = Paths.get(file.getAbsolutePath() + ".il").toString();
+               File il = new File(caminhoIl);
+               il.delete();
             }
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
                 String text = editor.getText();
@@ -101,7 +113,7 @@ public class BarraFerramentas {
             }
         }
     }
-
+    
     public static void colar(JTextArea editor) {
         // Obtém a área de transferência
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -148,86 +160,58 @@ public class BarraFerramentas {
         }
     }
 
-    public static String compilar(JTextArea editor) throws BadLocationException {
-        Lexico lexico = new Lexico();
-        lexico.setInput(editor.getText());
-        String resultado = "";
-        Token t = null;
-        String ancor = editor.getText();
-        String fill ="";
-        int linha, indice;
+    public static String compilar(JTextArea editor) throws BadLocationException, IOException {
+    	Lexico lexico = new Lexico();
+		Sintatico sintatico = new Sintatico();
+		Semantico semantico = new Semantico();
+		lexico.setInput(editor.getText());
+
         try {
-            while ((t = lexico.nextToken()) != null) {
-                indice = ancor.indexOf(t.getLexeme());
-                for(int i =0; i<t.getLexeme().length(); i++) {
-                    fill += " ";
-                }
-                ancor = ancor.replaceFirst(t.getLexeme(), fill);
-                linha = editor.getLineOfOffset(indice) + 1;
-
-                switch (t.getId()) {
-                    case 2:
-                        resultado += linha + " identificador " + t.getLexeme();
-                        break;
-                    case 3:
-                        resultado += linha + " constante_int " + t.getLexeme();
-                        break;
-                    case 4:
-                        resultado += linha + " constante_float " + t.getLexeme();
-                        break;
-                    case 5:
-                        resultado += linha + " constante_binaria " + t.getLexeme();
-                        break;
-                    case 6:
-                        resultado += linha + " constante_string " + t.getLexeme();
-                        break;
-                    case 7:
-                    case 8:
-                    case 9:
-                    case 10:
-                    case 11:
-                    case 12:
-                    case 13:
-                    case 14:
-                    case 15:
-                    case 16:
-                    case 17:
-                    case 18:
-                        resultado += linha + " palavra reservada " + t.getLexeme();
-                        break;
-                    case 19:
-                    case 20:
-                    case 21:
-                    case 22:
-                    case 23:
-                    case 24:
-                    case 25:
-                    case 26:
-                    case 27:
-                    case 28:
-                    case 29:
-                    case 30:
-                    case 31:
-                    case 32:
-                    case 33:
-                    case 34:
-                        resultado += linha + " simbolo especial " + t.getLexeme();
-                        break;
-                }
-
-                resultado += "\n";
-                fill = "";
-            }
+            sintatico.parse(lexico, semantico);    // tradu��o dirigida pela sintaxe
         }
-
         catch (LexicalError e) {
-            indice = editor.getText().indexOf(e.getLexema());
-            linha = editor.getLineOfOffset(indice) + 1;
-            return "Erro na linha " + linha + " - " + e.getLexema() + " " + e.getMessage();
+            int indice = editor.getText().indexOf(e.getLexema());
+            int linha = editor.getLineOfOffset(indice) + 1;
+            String message = e.getMessage();
+            
+            if (message.contains("constante_string")
+            		|| message.contains("comentário de bloco")) {
+            	return "Erro na linha " + linha + " " + message;
+            }
+			return "Erro na linha " + linha + " - " + e.getLexema() + " " + message;
         }
+        catch (SyntaticError e)
+		{
+			int linha = editor.getLineOfOffset(e.getPosition()) + 1;
+			
+            return "Erro na linha " + linha + " - encontrado " + e.getLexema() + " " + e.getMessage();
+			 
+			//Trata erros sintáticos
+			//linha 				sugestão: converter getPosition em linha
+			//s�mbolo encontrado    sugest�o: implementar um m�todo getToken no sintatico
+			//mensagem - s�mbolos esperados,   alterar ParserConstants.java, String[] PARSER_ERROR
+		}
+        catch (SemanticError e) {
+            //TODO
+        }
+        salvaCodigoGerado(semantico);
 
-        return resultado;
+        return "Programa compilado com sucesso.";
     }
+
+	private static void salvaCodigoGerado(Semantico semantico) throws IOException {
+		if (caminho == null) {
+			return;
+		}
+		Path caminhoArq = Paths.get(caminho);
+        String nomeArq = caminhoArq.getFileName().toString();
+        String caminhoAtual = caminhoArq.toFile().getParent();
+        
+        String ondeSalvar = caminhoAtual + "\\" + nomeArq + ".il";
+        File file = new File(ondeSalvar);
+        file.createNewFile();
+        Files.write(Paths.get(ondeSalvar), semantico.getCodigo().getBytes(), StandardOpenOption.APPEND);
+	}
 
     public static String equipe() {
         return "Equipe 01:\n"

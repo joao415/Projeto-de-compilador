@@ -81,7 +81,7 @@ public class Apresentacao {
 		panel_2.setLayout(null);
 		
 		JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, spEditor, spTA);
-		splitPane.setResizeWeight(0.8); // Define a propor��o inicial do tamanho do editor e da textArea
+		splitPane.setResizeWeight(0.8); // Define a proporção inicial do tamanho do editor e da textArea
 		panel.add(splitPane);
 		splitPane.setBounds(10, 11, 695, 548);
 			
@@ -97,7 +97,7 @@ public class Apresentacao {
 				
 				// resized slipPane
 				splitPane.setBounds(10, 11, panel.getWidth()-20, panel.getHeight()-20);
-				 // Define a propor��o atual do tamanho do editor e da textArea
+				 // Define a proporção atual do tamanho do editor e da textArea
 				splitPane.setDividerLocation(0.8);
 			}
 		});
@@ -116,7 +116,7 @@ public class Apresentacao {
 			}
 		});
 		
-		// Configura o atalho de teclado Ctrl + N para o bot�o
+		// Configura o atalho de teclado Ctrl + N para o botão
         InputMap inputMap = panel.getInputMap(JPanel.WHEN_IN_FOCUSED_WINDOW);
         inputMap.put(KeyStroke.getKeyStroke("control N"), "newAction");
         ActionMap actionMap = panel.getActionMap();
@@ -139,7 +139,7 @@ public class Apresentacao {
 			BarraFerramentas.abrir(editor, textArea, tf);
 		});
 		
-		// Configura o atalho de teclado Ctrl + O para o bot�o
+		// Configura o atalho de teclado Ctrl + O para o botão
         InputMap inputMap2 = panel.getInputMap(JPanel.WHEN_IN_FOCUSED_WINDOW);
         inputMap2.put(KeyStroke.getKeyStroke("control O"), "openAction");
         ActionMap actionMap2 = panel.getActionMap();
@@ -158,14 +158,14 @@ public class Apresentacao {
 		panel_2.add(btnSalvar);
 		btnSalvar.addActionListener(e -> BarraFerramentas.salvar(editor, textArea, tf));
 		
-		// Configura o atalho de teclado Ctrl + S para o bot�o
+		// Configura o atalho de teclado Ctrl + S para o botão
         InputMap inputMap3 = panel.getInputMap(JPanel.WHEN_IN_FOCUSED_WINDOW);
         inputMap3.put(KeyStroke.getKeyStroke("control S"), "saveAction");
         ActionMap actionMap3 = panel.getActionMap();
         actionMap3.put("saveAction", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Adicione o c�digo para salvar o arquivo aqui
+                // Adicione o código para salvar o arquivo aqui
                 BarraFerramentas.salvar(editor, textArea, tf);
             }
         });
@@ -203,12 +203,12 @@ public class Apresentacao {
 		btnCompilar.addActionListener(e -> {
 			try {
 				textArea.setText(BarraFerramentas.compilar(editor));
-			} catch (BadLocationException ex) {
+			} catch (BadLocationException | IOException ex) {
 				throw new RuntimeException(ex);
 			}
 		});
 		
-		// Configura o atalho de teclado F7 para o bot�o
+		// Configura o atalho de teclado F7 para o botão
         InputMap inputMap4 = panel.getInputMap(JPanel.WHEN_IN_FOCUSED_WINDOW);
         inputMap4.put(KeyStroke.getKeyStroke("F7"), "compileAction");
         ActionMap actionMap4 = panel.getActionMap();
@@ -216,7 +216,7 @@ public class Apresentacao {
         	public void actionPerformed(ActionEvent e) {
 				try {
 					textArea.setText(BarraFerramentas.compilar(editor));
-				} catch (BadLocationException ex) {
+				} catch (BadLocationException | IOException ex) {
 					throw new RuntimeException(ex);
 				}
 			}        	
@@ -234,7 +234,7 @@ public class Apresentacao {
 			}
 		});
 		
-		// Configura o atalho de teclado F1 para o bot�o
+		// Configura o atalho de teclado F1 para o botão
         InputMap inputMap5 = panel.getInputMap(JPanel.WHEN_IN_FOCUSED_WINDOW);
         inputMap5.put(KeyStroke.getKeyStroke("F1"), "teamAction");
         ActionMap actionMap5 = panel.getActionMap();
@@ -252,7 +252,7 @@ public class Apresentacao {
 	}
 	
 	/**
-	 * Retorna uma inst�ncia do {@link ImageIcon} de acordo com o caminho da imagem
+	 * Retorna uma instância do {@link ImageIcon} de acordo com o caminho da imagem
 	 * informada
 	 * 
 	 * @param caminho
